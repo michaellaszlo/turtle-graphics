@@ -53,5 +53,24 @@ Polygon.load = function () {
     context.lineTo(x2, y2);
     context.stroke();
   };
+  function makeUnselectable(element) {
+    element.className += ' unselectable';
+    element.ondragstart = element.onselectstart = function (event) {
+      event.preventDefault();
+    };
+  }
+  makeUnselectable(canvas);
+  var numSides = document.getElementById('numSides'),
+      minus = document.getElementById('minus'),
+      plus = document.getElementById('plus');
+  makeUnselectable(numSides);
+  makeUnselectable(minus);
+  makeUnselectable(plus);
+  minus.onmousedown = function () {
+    numSides.innerHTML = parseInt(numSides.innerHTML, 10) - 1;
+  };
+  plus.onmousedown = function () {
+    numSides.innerHTML = parseInt(numSides.innerHTML, 10) + 1;
+  };
 };
 window.onload = Polygon.load;
