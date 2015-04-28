@@ -63,11 +63,14 @@ Polygon.load = function () {
       context.stroke();
     };
   };
+  function noop() {
+  }
+  canvas.onmousemove = noop;
   canvas.onmouseup = canvas.onmouseout = function (event) {
-    if (canvas.onmousemove === undefined) {
+    if (canvas.onmousemove === noop) {
       return;
     }
-    canvas.onmousemove = undefined;
+    canvas.onmousemove = noop;
     for (var i = 0; i < controls.length; ++i) {
       controls[i].style.zIndex = 0;
     }
