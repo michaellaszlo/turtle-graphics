@@ -1,9 +1,9 @@
 var Polygon = {
   color: {
-    axes: '#ccc',
+    axis: '#ccc',
     side: {
-       hover: { plain: '#e4e277', special: '#bab850' },
-       final: { plain: '#b3e477', special: '#85a55e' }
+       hover: { plain: '#dddfa4', special: '#9d9c64' },
+       final: { plain: '#b0c598', special: '#4f7337' }
     }
   }
 };
@@ -23,7 +23,7 @@ Polygon.drawAxes = function() {
       origin = g.origin,
       color = g.color;
   context.lineWidth = 2;
-  context.strokeStyle = color.axes;
+  context.strokeStyle = color.axis;
   context.beginPath();
   context.moveTo(origin.left, 0);
   context.lineTo(origin.left, canvas.height);
@@ -70,14 +70,15 @@ Polygon.normalizeAngle = function (angle) {
   angle -= Math.floor(angle/(2*Math.PI))*2*Math.PI;
   return angle;
 };
-Polygon.drawPolygon = function(x1, y1, x2, y2,
-    strokeStyleWhole, strokeStyleFirst) {
+Polygon.drawPolygon = function (situation) {
   var g = Polygon,
       canvas = g.canvas,
       context = g.context,
       turtle = g.turtle,
+      color = g.color,
       n = parseInt(document.getElementById('numSides').innerHTML, 10),
       turn = 2*Math.PI / n,
+      x1 = g.x1, y1 = g.y1, x2 = g.x2, y2 = g.y2,
       dx = x2-x1,
       dy = y2-y1,
       length = Math.sqrt(dx*dx + dy*dy);
@@ -89,24 +90,22 @@ Polygon.drawPolygon = function(x1, y1, x2, y2,
   context.clearRect(0, 0, canvas.width, canvas.height);
   g.drawAxes();
   context.lineWidth = 4;
+  context.lineCap = 'round';
   context.beginPath();
-  if (strokeStyleWhole != undefined) {
-    context.strokeStyle = strokeStyleWhole;
-  }
+  context.strokeStyle = color.side[situation].plain;
   turtle.setPosition(x1, y1);
   turtle.setAngle(angle);
   for (var i = 0; i < n; ++i) {
     turtle.forward(length);
     turtle.left(turn);
   }
+  context.closePath();
   context.stroke();
-  if (strokeStyleFirst !== undefined) {
-    context.strokeStyle = strokeStyleFirst;
-    context.beginPath();
-    turtle.setPosition(x1, y1);
-    turtle.forward(length);
-    context.stroke();
-  }
+  context.strokeStyle = color.side[situation].special;
+  context.beginPath();
+  turtle.setPosition(x1, y1);
+  turtle.forward(length);
+  context.stroke();
 }
 Polygon.load = function () {
   var g = Polygon,
@@ -129,15 +128,19 @@ Polygon.load = function () {
       plus = document.getElementById('plus');
   minus.onmousedown = function () {
     var current = parseInt(numSides.innerHTML, 10);
-    if (current > 3) {
-      numSides.innerHTML = current-1;
+    if (current == 3) {
+      return;
     }
+    numSides.innerHTML = current-1;
+    g.drawPolygon('final');
   };
   plus.onmousedown = function () {
     var current = parseInt(numSides.innerHTML, 10);
-    if (current < 20) {
-      numSides.innerHTML = current+1;
+    if (current == 20) {
+      return;
     }
+    numSides.innerHTML = current+1;
+    g.drawPolygon('final');
   };
   var controls = [display.begin, display.end, numSides, minus, plus,
                   document.getElementById('options')];
@@ -154,26 +157,25 @@ Polygon.load = function () {
         y = origin.top - top;
     return { x: x, y: y };
   };
-  var x1, y1, x2, y2;
   canvas.onmousedown = function (event) {
     document.body.style.cursor = 'default';
     var position = getPosition(event);
-    x1 = x2 = position.x;
-    y1 = y2 = position.y;
-    display.begin.innerHTML = '<span class="label">x1, y1 =</span> '+x1+', '+y1;
+    g.x1 = g.x2 = position.x;
+    g.y1 = g.y2 = position.y;
+    display.begin.innerHTML =
+        '<span class="label">x1, y1 =</span> '+g.x1+', '+g.y1;
     display.end.innerHTML = '';
-    Polygon.drawPolygon(x1, y1, x2, y2,
-                        color.side.hover.plain, color.side.hover.special);
+    g.drawPolygon('hover');
     for (var i = 0; i < controls.length; ++i) {
       controls[i].style.zIndex = -10;
     }
     canvas.onmousemove = function (event) {
       var position = getPosition(event);
-      x2 = position.x;
-      y2 = position.y;
-      display.end.innerHTML = '<span class="label">x2, y2 =</span> '+x2+', '+y2;
-      Polygon.drawPolygon(x1, y1, x2, y2,
-                          color.side.hover.plain, color.side.hover.special);
+      g.x2 = position.x;
+      g.y2 = position.y;
+      display.end.innerHTML =
+          '<span class="label">x2, y2 =</span> '+g.x2+', '+g.y2;
+      g.drawPolygon('hover');
     };
   };
   function noop() {
@@ -184,8 +186,7 @@ Polygon.load = function () {
       return;
     }
     canvas.onmousemove = noop;
-    Polygon.drawPolygon(x1, y1, x2, y2,
-                        color.side.final.plain, color.side.final.special);
+    g.drawPolygon('final');
     for (var i = 0; i < controls.length; ++i) {
       controls[i].style.zIndex = 0;
     }

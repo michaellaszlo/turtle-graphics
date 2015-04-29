@@ -1,6 +1,7 @@
 body {
   margin: 0;
   padding: 0;
+  overflow: hidden;
 }
 .unselectable {
   -webkit-user-select: none;
@@ -19,6 +20,8 @@ canvas {
   color: #444;
   position: fixed;
   right: 40px;
+  font-family: sans-serif;
+  font-size: 20px;
 }
 .label {
   color: #aaa;
@@ -29,14 +32,12 @@ canvas {
 #end {
   top: 60px;
 }
-.display, #options div {
-  font-family: sans-serif;
-  font-size: 24px;
-}
 #options {
   position: fixed;
   right: 40px;
   top: 100px;
+  font-family: sans-serif;
+  font-size: 28px;
 }
 #options div {
   display: inline;
