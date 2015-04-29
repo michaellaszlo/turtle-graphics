@@ -1,37 +1,59 @@
 var Polygon = {};
 Polygon.resize = function() {
   var g = Polygon,
-      canvas = g.canvas;
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+      canvas = g.canvas,
+      context = g.context,
+      width = canvas.width = window.innerWidth,
+      height = canvas.height = window.innerHeight;
+  g.origin = { left: Math.floor(width/2), top: Math.floor(height/2) };
+  g.drawAxes();
 };
-Polygon.draw = function(x1, y1, x2, y2, strokeStyleFirst, strokeStyleRest) {
+Polygon.drawAxes = function() {
   var g = Polygon,
       canvas = g.canvas,
-      context = g.context;
+      context = g.context,
+      origin = g.origin;
+  context.lineWidth = 2;
+  context.strokeStyle = '#ddd';
+  context.beginPath();
+  context.moveTo(origin.left, 0);
+  context.lineTo(origin.left, canvas.height);
+  context.moveTo(0, origin.top);
+  context.lineTo(canvas.width, origin.top);
+  context.stroke();
+};
+Polygon.drawPolygon = function(x1, y1, x2, y2,
+    strokeStyleFirst, strokeStyleRest) {
+  var g = Polygon,
+      canvas = g.canvas,
+      context = g.context,
+      origin = g.origin;
+  context.clearRect(0, 0, canvas.width, canvas.height);
+  g.drawAxes();
+  context.lineWidth = 3;
   if (strokeStyleFirst !== undefined) {
     context.strokeStyle = strokeStyleFirst;
   }
-  context.clearRect(0, 0, canvas.width, canvas.height);
   context.beginPath();
-  context.moveTo(x1, y1);
-  context.lineTo(x2, y2);
+  context.moveTo(origin.left + x1, origin.top - y1);
+  context.lineTo(origin.left + x2, origin.top - y2);
   context.stroke();
   if (strokeStyleRest !== undefined) {
     context.strokeStyle = strokeStyleRest;
   }
-  context.moveTo(x2, y2);
+  context.beginPath();
+  context.moveTo(origin.left + x2, origin.top - y2);
   var n = parseInt(document.getElementById('numSides').innerHTML, 10),
       turn = 2*Math.PI / n,
       dx = x2-x1,
       dy = y2-y1,
-      length = Math.sqrt(dx*dx, dy*dy);
+      length = Math.sqrt(dx*dx + dy*dy);
   if (dy >= 0) {
-    var angle = Math.asin(dy/length);
+    var angle = Math.acos(dx/length);
   } else {
     var angle = 2*Math.PI - Math.acos(dx/length);
   }
-  console.log(angle);
+  console.log(Math.floor(180*angle/Math.PI));
 }
 Polygon.load = function () {
   var g = Polygon,
@@ -64,10 +86,14 @@ Polygon.load = function () {
   }
   var getPosition = function (event) {
     event = event || window.event;
-    var rect = canvas.getBoundingClientRect();
-    return { x: event.clientX - rect.left, y: event.clientY - rect.top };
+    var rect = canvas.getBoundingClientRect(),
+        left = event.clientX - rect.left,
+        top = event.clientY - rect.top,
+        origin = g.origin,
+        x = left - origin.left,
+        y = origin.top - top;
+    return { x: x, y: y };
   };
-  context.lineWidth = 3;
   var x1, y1, x2, y2;
   canvas.onmousedown = function (event) {
     document.body.style.cursor = 'default';
@@ -76,7 +102,7 @@ Polygon.load = function () {
     y1 = y2 = position.y;
     display.begin.innerHTML = '<span class="label">x1, y1 =</span> '+x1+', '+y1;
     display.end.innerHTML = '';
-    Polygon.draw(x1, y1, x2, y2, '#96a93a');
+    Polygon.drawPolygon(x1, y1, x2, y2, '#96a93a');
     for (var i = 0; i < controls.length; ++i) {
       controls[i].style.zIndex = -10;
     }
@@ -85,7 +111,7 @@ Polygon.load = function () {
       x2 = position.x;
       y2 = position.y;
       display.end.innerHTML = '<span class="label">x2, y2 =</span> '+x2+', '+y2;
-      Polygon.draw(x1, y1, x2, y2, '#96a93a');
+      Polygon.drawPolygon(x1, y1, x2, y2, '#96a93a');
     };
   };
   function noop() {
@@ -96,7 +122,7 @@ Polygon.load = function () {
       return;
     }
     canvas.onmousemove = noop;
-    Polygon.draw(x1, y1, x2, y2, '#2c562d');
+    Polygon.drawPolygon(x1, y1, x2, y2, '#2c562d');
     for (var i = 0; i < controls.length; ++i) {
       controls[i].style.zIndex = 0;
     }

@@ -18,7 +18,7 @@ canvas {
 .display {
   color: #444;
   position: fixed;
-  left: 40px;
+  right: 40px;
 }
 .label {
   color: #aaa;
@@ -35,7 +35,7 @@ canvas {
 }
 #options {
   position: fixed;
-  left: 40px;
+  right: 40px;
   top: 100px;
 }
 #options div {
