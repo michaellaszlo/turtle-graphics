@@ -15,3 +15,5 @@ draw a regular polygon with a given number of sides, with one vertex
 anchored at a given point and the rest of the polygon oriented at a
 given angle from that point.
 
+![Turtle graphics demonstrated with a polygon-drawing app](https://github.com/michaellaszlo/turtle-graphics/blob/master/screenshot.png)
+
