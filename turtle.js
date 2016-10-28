@@ -1,58 +1,22 @@
-var Polygon = {
-  color: {
-    axis: '#ccc',
-    side: {
-       hover: { plain: '#dddfa4', special: '#9d9c64' },
-       final: { plain: '#b0c598', special: '#4f7337' }
-    }
-  }
-};
-Polygon.resize = function() {
-  var g = Polygon,
-      canvas = g.canvas,
-      context = g.context,
-      width = canvas.width = window.innerWidth,
-      height = canvas.height = window.innerHeight;
-  g.origin = { left: Math.floor(width/2), top: Math.floor(height/2) };
-  g.drawAxes();
-};
-Polygon.drawAxes = function() {
-  var g = Polygon,
-      canvas = g.canvas,
-      context = g.context,
-      origin = g.origin,
-      color = g.color;
-  context.lineWidth = 2;
-  context.strokeStyle = color.axis;
-  context.beginPath();
-  context.moveTo(origin.left, 0);
-  context.lineTo(origin.left, canvas.height);
-  context.moveTo(0, origin.top);
-  context.lineTo(canvas.width, origin.top);
-  context.stroke();
-};
-Polygon.turtle = new Turtle();
+function Turtle() {
+  this.x = 0;
+  this.y = 0;
+  this.angle = 0;
+}
 
-{ x: 0, y: 0, angle: 0 };
-Polygon.turtle.setPosition = function (x, y) {
-  var g = Polygon,
-      turtle = g.turtle,
-      context = g.context,
-      origin = g.origin;
-  turtle.x = x;
-  turtle.y = y;
-  context.moveTo(origin.left + turtle.x, origin.top - turtle.y);
+Turtle.prototype.setPosition = function (x, y) {
+  this.x = x;
+  this.y = y;
 };
-Polygon.turtle.setAngle = function (angle) {
-  var g = Polygon,
-      turtle = g.turtle;
-  turtle.angle = angle;
+
+Turtle.prototype.setAngle = function (angle) {
+  this.angle = angle;
 };
-Polygon.turtle.left = function (turn) {
-  var g = Polygon,
-      turtle = g.turtle;
-  g.turtle.angle = g.normalizeAngle(g.turtle.angle + turn);
+
+Turtle.prototype.left = function (turn) {
+  this.angle = g.normalizeAngle(g.turtle.angle + turn);
 };
+
 Polygon.turtle.right = function (turn) {
   var g = Polygon,
       turtle = g.turtle;
