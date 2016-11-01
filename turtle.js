@@ -1,7 +1,11 @@
-function Turtle() {
+function Turtle(canvas, origin) {
+  this.canvas = canvas;
+  this.context = canvas.getContext('2d');
+  this.origin = origin;
   this.x = 0;
   this.y = 0;
   this.angle = 0;
+  this.drawing = true;
 }
 
 Turtle.prototype.setPosition = function (x, y) {
@@ -13,149 +17,38 @@ Turtle.prototype.setAngle = function (angle) {
   this.angle = angle;
 };
 
-Turtle.prototype.left = function (turn) {
-  this.angle = g.normalizeAngle(g.turtle.angle + turn);
-};
-
-Polygon.turtle.right = function (turn) {
-  var g = Polygon,
-      turtle = g.turtle;
-  g.turtle.angle = g.normalizeAngle(g.turtle.angle - turn);
-};
-Polygon.turtle.forward = function (distance) {
-  var g = Polygon,
-      turtle = g.turtle,
-      canvas = g.canvas,
-      context = g.context,
-      origin = g.origin;
-  turtle.x += Math.cos(turtle.angle)*distance;
-  turtle.y += Math.sin(turtle.angle)*distance;
-  context.lineTo(origin.left + turtle.x, origin.top - turtle.y);
-};
-Polygon.normalizeAngle = function (angle) {
-  angle -= Math.floor(angle/(2*Math.PI))*2*Math.PI;
+Turtle.prototype.normalizeAngle = function (angle) {
+  angle -= Math.floor(angle / (2*Math.PI)) * 2*Math.PI;
   return angle;
 };
-Polygon.drawPolygon = function (situation) {
-  var g = Polygon,
-      canvas = g.canvas,
-      context = g.context,
-      turtle = g.turtle,
-      color = g.color,
-      n = parseInt(document.getElementById('numSides').innerHTML, 10),
-      turn = 2*Math.PI / n,
-      x1 = g.x1, y1 = g.y1, x2 = g.x2, y2 = g.y2,
-      dx = x2-x1,
-      dy = y2-y1,
-      length = Math.sqrt(dx*dx + dy*dy);
-  if (dy >= 0) {
-    var angle = Math.acos(dx/length);
-  } else {
-    var angle = 2*Math.PI - Math.acos(dx/length);
-  }
-  context.clearRect(0, 0, canvas.width, canvas.height);
-  g.drawAxes();
-  context.lineWidth = 4;
-  context.lineCap = 'round';
-  context.beginPath();
-  context.strokeStyle = color.side[situation].plain;
-  turtle.setPosition(x1, y1);
-  turtle.setAngle(angle);
-  for (var i = 0; i < n; ++i) {
-    turtle.forward(length);
-    turtle.left(turn);
-  }
-  context.closePath();
-  context.stroke();
-  context.strokeStyle = color.side[situation].special;
-  context.beginPath();
-  turtle.setPosition(x1, y1);
-  turtle.forward(length);
-  context.stroke();
-}
-Polygon.load = function () {
-  var g = Polygon,
-      canvas = g.canvas = document.getElementById('surface'),
-      context = g.context = canvas.getContext('2d'),
-      display = { begin: document.getElementById('begin'),
-                  end: document.getElementById('end') },
-      color = g.color;
-  g.resize();
-  window.onresize = g.resize;
-  function makeUnselectable(element) {
-    element.className += ' unselectable';
-    element.ondragstart = element.onselectstart = function (event) {
-      event.preventDefault();
-    };
-  }
-  makeUnselectable(canvas);
-  var numSides = document.getElementById('numSides'),
-      minus = document.getElementById('minus'),
-      plus = document.getElementById('plus');
-  minus.onmousedown = function () {
-    var current = parseInt(numSides.innerHTML, 10);
-    if (current == 3) {
-      return;
-    }
-    numSides.innerHTML = current-1;
-    g.drawPolygon('final');
-  };
-  plus.onmousedown = function () {
-    var current = parseInt(numSides.innerHTML, 10);
-    if (current == 20) {
-      return;
-    }
-    numSides.innerHTML = current+1;
-    g.drawPolygon('final');
-  };
-  var controls = [display.begin, display.end, numSides, minus, plus,
-                  document.getElementById('options')];
-  for (var i = 0; i < controls.length; ++i) {
-    makeUnselectable(controls[i]);
-  }
-  var getPosition = function (event) {
-    event = event || window.event;
-    var rect = canvas.getBoundingClientRect(),
-        left = event.clientX - rect.left,
-        top = event.clientY - rect.top,
-        origin = g.origin,
-        x = left - origin.left,
-        y = origin.top - top;
-    return { x: x, y: y };
-  };
-  canvas.onmousedown = function (event) {
-    document.body.style.cursor = 'default';
-    var position = getPosition(event);
-    g.x1 = g.x2 = position.x;
-    g.y1 = g.y2 = position.y;
-    display.begin.innerHTML =
-        '<span class="label">x1, y1 =</span> '+g.x1+', '+g.y1;
-    display.end.innerHTML = '';
-    g.drawPolygon('hover');
-    for (var i = 0; i < controls.length; ++i) {
-      controls[i].style.zIndex = -10;
-    }
-    canvas.onmousemove = function (event) {
-      var position = getPosition(event);
-      g.x2 = position.x;
-      g.y2 = position.y;
-      display.end.innerHTML =
-          '<span class="label">x2, y2 =</span> '+g.x2+', '+g.y2;
-      g.drawPolygon('hover');
-    };
-  };
-  function noop() {
-  }
-  canvas.onmousemove = noop;
-  canvas.onmouseup = canvas.onmouseout = function (event) {
-    if (canvas.onmousemove === noop) {
-      return;
-    }
-    canvas.onmousemove = noop;
-    g.drawPolygon('final');
-    for (var i = 0; i < controls.length; ++i) {
-      controls[i].style.zIndex = 0;
-    }
-  };
+
+Turtle.prototype.left = function (turn) {
+  this.angle = this.normalizeAngle(this.angle + turn);
 };
-window.onload = Polygon.load;
+
+Turtle.prototype.right = function (turn) {
+  this.left(-turn);
+};
+
+Turtle.prototype.penUp = function () {
+  this.drawing = false;
+};
+
+Turtle.prototype.penDown = function () {
+  this.drawing = true;
+};
+
+Turtle.prototype.forward = function (distance) {
+  var x0 = this.x,
+      y0 = this.y;
+  this.x += Math.cos(this.angle) * distance;
+  this.y += Math.sin(this.angle) * distance;
+  if (this.drawing) {
+    this.context.beginPath();
+    this.context.moveTo(this.origin.left + x0, this.origin.top - y0);
+    this.context.lineTo(this.origin.left + this.x, this.origin.top - this.y);
+    this.context.closePath();
+    this.context.stroke();
+  }
+};
+
